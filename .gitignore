@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Data & Database binaries / Large Parquet & JSON artifacts
+data/raw/*
+data/extracted/*
+data/processed/*
+data/prices/*
+data/analytics/*
+data/data_store/*
+data/qdrant_db/*
+!data/**/.gitkeep
+*.parquet
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
