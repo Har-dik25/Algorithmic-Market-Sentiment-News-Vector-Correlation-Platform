@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="Signal Desk — lead-lag correlation console for the News Vector Correlation Platform." />
+<title>Signal Desk — News Vector Correlation</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230E1420'/%3E%3Cpath d='M7 20l5-9 5 6 5-11 3 5' stroke='%23E8A33D' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="app">
+
+    <!-- ============ SIDEBAR ============ -->
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-mark">◆</span>
+        <div class="brand-text">
+          <div class="brand-name">Signal Desk</div>
+          <div class="brand-sub">news vector correlation</div>
+        </div>
+      </div>
+
+      <div class="watchlist-search">
+        <input id="tickerFilter" type="text" placeholder="Filter tickers…" autocomplete="off" />
+      </div>
+
+      <div id="sectorChips" class="sector-chips" role="group" aria-label="Filter by sector"></div>
+
+      <div id="watchlist" class="watchlist" role="listbox" aria-label="Ticker watchlist" tabindex="0">
+        <!-- populated by app.js -->
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="legend">
+          <span class="legend-item"><i class="dot lead"></i>leading</span>
+          <span class="legend-item"><i class="dot lag"></i>lagging</span>
+          <span class="legend-item"><i class="dot coincident"></i>coincident</span>
+        </div>
+        <div class="kbd-hint"><kbd>↑</kbd><kbd>↓</kbd> navigate · <kbd>↵</kbd> select</div>
+      </div>
+    </aside>
+
+    <!-- ============ MAIN ============ -->
+    <main class="main">
+
+      <header class="topbar">
+        <div class="topbar-left">
+          <h1 id="activeTicker">—</h1>
+          <span id="activeSector" class="sector-tag">select a ticker</span>
+          <button id="compareToggle" class="compare-toggle" aria-pressed="false">+ compare</button>
+        </div>
+        <div class="topbar-right">
+          <div class="api-config">
+            <label for="apiBase">API</label>
+            <input id="apiBase" type="text" value="http://localhost:8000" spellcheck="false" />
+            <button id="reconnectBtn">connect</button>
+          </div>
+          <button id="recomputeBtn" class="icon-btn" title="Ask the backend to recompute correlations for the full ticker universe" disabled>⟳ recompute</button>
+          <button id="helpBtn" class="icon-btn" aria-haspopup="dialog" aria-controls="helpModal" title="Shortcuts &amp; tips">?</button>
+          <div id="statusPill" class="status-pill demo">
+            <i class="status-dot"></i><span id="statusText">demo data</span>
+          </div>
+        </div>
+      </header>
+
+      <div id="compareBar" class="compare-bar">
+        <label for="compareSelect">compare against</label>
+        <select id="compareSelect"></select>
+        <button id="compareClear">clear</button>
+      </div>
+
+      <div id="demoBanner" class="demo-banner">
+        Showing generated demo data — point the API field at a running backend and press connect to load live signals.
+      </div>
+
+      <section class="kpi-strip" id="kpiStrip">
+        <div class="kpi">
+          <span class="kpi-label">tracked tickers</span>
+          <span id="kpiTickers" class="kpi-value mono">—</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi-label">indexed articles</span>
+          <span id="kpiArticles" class="kpi-value mono">—</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi-label">backtest accuracy</span>
+          <span id="kpiBacktest" class="kpi-value mono">—</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi-label">last correlation run</span>
+          <span id="kpiLastRun" class="kpi-value mono">—</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi-label">model confidence</span>
+          <span id="kpiModel" class="kpi-value mono">—</span>
+        </div>
+      </section>
+
+      <section class="grid">
+
+        <div class="panel panel-correlation">
+          <div class="panel-head">
+            <h2>Lead&nbsp;/&nbsp;lag correlation</h2>
+            <div class="panel-actions">
+              <div class="panel-stats">
+                <div class="stat">
+                  <span class="stat-label">optimal lag</span>
+                  <span id="statOptimalLag" class="stat-value mono">—</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-label">peak r</span>
+                  <span id="statPeakR" class="stat-value mono">—</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-label">p-value</span>
+                  <span id="statPValue" class="stat-value mono">—</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-label">regime</span>
+                  <span id="statRegime" class="stat-value mono">—</span>
+                </div>
+              </div>
+              <button id="exportChartBtn" class="icon-btn" title="Export chart as PNG">⭳ export</button>
+            </div>
+          </div>
+          <div id="correlationChart" class="chart"></div>
+        </div>
+
+        <div class="panel panel-overlay">
+          <div class="panel-head">
+            <h2>Price vs. news-vector signal</h2>
+            <span class="panel-hint">click a point to load evidence for that date</span>
+          </div>
+          <div id="overlayChart" class="chart"></div>
+        </div>
+
+        <div class="panel panel-evidence">
+          <div class="panel-head">
+            <h2>Evidence</h2>
+            <div class="evidence-date">
+              <label for="evidenceDate">date</label>
+              <input id="evidenceDate" type="date" />
+              <button id="loadEvidenceBtn">load</button>
+            </div>
+          </div>
+          <div id="evidenceList" class="evidence-list">
+            <p class="evidence-empty">Select a date on the chart above, or pick one and press load.</p>
+          </div>
+        </div>
+
+        <div class="panel panel-search">
+          <div class="panel-head">
+            <h2>Semantic search</h2>
+          </div>
+          <div class="search-row">
+            <input id="searchInput" type="text" placeholder="e.g. supply chain disruption, guidance cut, chip demand…" />
+            <button id="searchBtn">search</button>
+          </div>
+          <div id="searchResults" class="evidence-list">
+            <p class="evidence-empty">Results from the vector store will appear here.</p>
+          </div>
+        </div>
+
+      </section>
+
+      <footer class="app-footer">
+        <span>Signal Desk — frontend console for the Algorithmic Market Sentiment &amp; News Vector Correlation Platform</span>
+        <span id="lastUpdated" class="mono"></span>
+      </footer>
+    </main>
+  </div>
+
+  <div id="helpModal" class="help-modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle" hidden>
+    <div class="help-card">
+      <div class="help-head">
+        <h3 id="helpTitle">Shortcuts &amp; tips</h3>
+        <button id="helpClose" class="icon-btn" aria-label="Close">close</button>
+      </div>
+      <ul class="help-list">
+        <li><kbd>↑</kbd><kbd>↓</kbd> move through the watchlist, <kbd>↵</kbd> select</li>
+        <li>Click a point on the price / signal chart to jump to that date's evidence</li>
+        <li>Use <strong>compare</strong> to overlay a second ticker's correlation curve</li>
+        <li>The dot beside each ticker shows its cached lead / lag / coincident regime</li>
+        <li><strong>recompute</strong> asks a connected backend to refresh correlations for the whole universe</li>
+        <li>Your API URL, active ticker, and compare selection are remembered between visits</li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

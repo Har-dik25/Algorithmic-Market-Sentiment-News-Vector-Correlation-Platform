@@ -379,13 +379,21 @@ def recompute_correlations(background_tasks: BackgroundTasks, api_key: Optional[
     background_tasks.add_task(_recompute)
     return {"message": "Correlation recomputation initiated across ticker universe in background."}
 
-# Web Dashboard HTML interface
+# Signal Desk Web Dashboard UI
 @app.get("/", response_class=HTMLResponse, tags=["Dashboard UI"])
 @app.get("/dashboard", response_class=HTMLResponse, tags=["Dashboard UI"])
 def render_dashboard():
-    """Serve the interactive Plotly Dashboard HTML page."""
-    html_path = PROJECT_ROOT / "web" / "templates" / "index.html"
+    """Serve the Signal Desk web dashboard console."""
+    html_path = PROJECT_ROOT / "web" / "index.html"
     if html_path.exists():
         with open(html_path, "r", encoding="utf-8") as f:
             return HTMLResponse(content=f.read())
-    return HTMLResponse(content="<h1>Dashboard Template Not Found</h1>", status_code=404)
+    return HTMLResponse(content="<h1>Signal Desk Dashboard Not Found</h1>", status_code=404)
+
+@app.get("/style.css", include_in_schema=False)
+def get_style_css():
+    return FileResponse(PROJECT_ROOT / "web" / "style.css", media_type="text/css")
+
+@app.get("/app.js", include_in_schema=False)
+def get_app_js():
+    return FileResponse(PROJECT_ROOT / "web" / "app.js", media_type="application/javascript")
