@@ -1,12 +1,10 @@
 import json
-import hashlib
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Dict, Optional, Set
 import urllib.request
 import pandas as pd
-import pyarrow.parquet as pq
 
 from src.config import (
     RAW_HISTORICAL_DIR,

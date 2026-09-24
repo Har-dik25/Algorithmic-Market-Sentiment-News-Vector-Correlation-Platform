@@ -14,7 +14,7 @@ from src.config import (
     ALL_TICKERS
 )
 from src.pipeline.embeddings import EmbeddingEngine
-from src.pipeline.price_feed import load_price_series, get_prices_from_db
+from src.pipeline.price_feed import get_prices_from_db
 from src.data.database import get_connection, init_db
 from src.data.vector_handoff import VectorStoreHandoff
 from src.utils.logger import get_logger

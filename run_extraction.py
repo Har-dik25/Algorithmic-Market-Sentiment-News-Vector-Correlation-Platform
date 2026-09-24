@@ -93,7 +93,7 @@ def main():
     logger.info("EXTRACTION PIPELINE COMPLETED SUCCESSFULLY!")
     logger.info(f"Extracted Dataset: {output_path} ({len(extracted_articles)} records)")
     logger.info(f"Validation Report: {EXTRACTION_REPORT_FILE}")
-    logger.info("Next Phase: Cleaning & Deduplication -> LangChain Embeddings -> Qdrant Handoff")
+    logger.info("Next Phase: Cleaning & Deduplication -> SentenceTransformers Embeddings -> Qdrant Handoff")
     logger.info("=" * 65)
 
 if __name__ == "__main__":

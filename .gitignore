@@ -30,3 +30,7 @@ data/qdrant_db/*
 .idea/
 .DS_Store
 Thumbs.db
+
+# Secrets & Logs
+.env
+*.log

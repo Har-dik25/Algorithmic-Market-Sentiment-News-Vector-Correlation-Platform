@@ -79,8 +79,8 @@ There is no lightweight, self-hostable platform that (a) represents news at the 
 flowchart LR
   A[News Scrapers<br/>RSS/APIs/Datasets] --> B[Ingestion Queue]
   B --> C[Clean & Chunk]
-  C --> D[LangChain<br/>Embedding Pipeline]
-  D --> E[(Qdrant / Pinecone<br/>Vector Store)]
+  C --> D[SentenceTransformers<br/>Embedding Engine]
+  D --> E[(Qdrant<br/>Vector Store)]
   F[Price Feed<br/>OHLCV daily] --> G[(Time-series Store)]
   E --> H[Correlation Engine<br/>Lead-Lag Analysis]
   G --> H
@@ -94,8 +94,8 @@ flowchart LR
 - **News Scrapers** — scheduled jobs (e.g., Celery/cron) pulling from RSS feeds, news APIs, and archival datasets per ticker/sector
 - **Ingestion Queue** — buffers raw articles for processing, decoupling scrape rate from embedding throughput
 - **Clean & Chunk** — dedupe, strip boilerplate, split long articles into embeddable chunks
-- **LangChain Embedding Pipeline** — orchestrates the embedding model call, metadata tagging (ticker, timestamp, source), and upsert into the vector store
-- **Qdrant / Pinecone** — stores embeddings with metadata filters for ticker, date range, and source
+- **SentenceTransformers Embedding Engine** — generates 384-d dense vectors via `all-MiniLM-L6-v2`, with metadata tagging (ticker, timestamp, source), and upsert into the vector store
+- **Qdrant** — stores embeddings with metadata filters for ticker, date range, and source
 - **Time-series Store** — daily OHLCV price data (e.g., Postgres/TimescaleDB or a lightweight Parquet store)
 - **Correlation Engine** — computes the news-vector signal per time bucket and cross-correlates it against price returns across a range of lag offsets
 - **FastAPI Service** — REST endpoints for ingestion status, similarity search, and correlation queries; serves the dashboard's data
@@ -110,7 +110,7 @@ flowchart LR
 | FR-1 | System scrapes/ingests news for a configurable ticker/sector list on a scheduled interval | Must |
 | FR-2 | System deduplicates near-identical articles (e.g., syndicated wire stories) before embedding | Must |
 | FR-3 | System generates embeddings for each article/chunk and tags them with ticker, timestamp, and source metadata | Must |
-| FR-4 | System upserts embeddings into Qdrant/Pinecone with filterable metadata | Must |
+| FR-4 | System upserts embeddings into Qdrant with filterable metadata | Must |
 | FR-5 | System ingests daily OHLCV price data for all covered tickers | Must |
 | FR-6 | System computes a lead-lag cross-correlation between the news-vector signal and price returns across a configurable lag window | Must |
 | FR-7 | API exposes an endpoint to query correlation results by ticker and date range | Must |
@@ -130,8 +130,8 @@ flowchart LR
 1. **Ingest** — scheduled scrape/pull jobs (or bulk-loaded historical datasets) write raw articles to a staging store with source + timestamp
 2. **Clean** — strip HTML/boilerplate, dedupe near-duplicates, filter irrelevant articles by ticker/keyword match
 3. **Chunk** — split long articles into embeddable passages (e.g., ~500-token chunks) while preserving article-level metadata
-4. **Embed** — LangChain-orchestrated call to an embedding model; batch to control cost and throughput
-5. **Store** — upsert vectors into Qdrant/Pinecone with metadata filters (ticker, date, source, sentiment-adjacent tags)
+4. **Embed** — SentenceTransformers call to `all-MiniLM-L6-v2` embedding model; batch to control throughput
+5. **Store** — upsert vectors into Qdrant with metadata filters (ticker, date, source, sentiment-adjacent tags)
 6. **Aggregate** — roll up per-article embeddings into a per-day, per-ticker "news-vector" signal (e.g., centroid drift from a rolling baseline)
 7. **Correlate** — cross-correlate the daily news-vector signal against next-day (and lagged) price returns, storing correlation coefficients per lag offset
 8. **Serve** — FastAPI reads precomputed correlation results and supports on-demand similarity queries against the vector store
@@ -190,8 +190,8 @@ To avoid relying purely on live scraping (which is slow to accumulate history an
 | Component | Choice | Why |
 |---|---|---|
 | API layer | FastAPI | Async-native, auto-generated OpenAPI docs, low overhead — fits a data-heavy service with many read endpoints |
-| Vector store | Qdrant (primary) / Pinecone (managed alt.) | Qdrant is self-hostable and free for a portfolio deployment with strong metadata filtering; Pinecone is a drop-in managed alternative if hosting is a constraint |
-| Orchestration | LangChain | Standardizes the embed → store → retrieve flow and swaps embedding models/vector stores with minimal code change |
+| Vector store | Qdrant (local persistent) | Self-hostable and free for portfolio deployment with strong metadata filtering and sub-300ms p95 retrieval |
+| Embedding engine | SentenceTransformers (`all-MiniLM-L6-v2`) | Fast 384-d dense vector generation; runs locally with no API keys required |
 | Visualization | Plotly | Interactive, zoomable time-series and correlation charts embeddable directly in a Python-served dashboard (Dash/Streamlit) without a separate frontend build |
 
 This stack keeps the whole system inside the Python ecosystem, which shortens the path from data pipeline to API to dashboard and keeps the project buildable and demoable within a single repo.
@@ -203,7 +203,7 @@ This stack keeps the whole system inside the Python ecosystem, which shortens th
 | Phase | Deliverable | Duration |
 |---|---|---|
 | 1. Foundations | Bulk-load historical datasets (FNSPID/Kaggle sets), price data ingestion, cleaning + dedupe pipeline | 2 weeks |
-| 2. Embedding & Storage | LangChain embedding pipeline, Qdrant/Pinecone integration, metadata schema | 2 weeks |
+| 2. Embedding & Storage | SentenceTransformers embedding engine, Qdrant integration, metadata schema | 2 weeks |
 | 3. Correlation Engine | Daily news-vector aggregation, lead-lag cross-correlation computation, backtest on 2+ years of historical data | 2 weeks |
 | 4. Live Scrapers | RSS/API scrapers to extend the timeline forward from the historical datasets | 1 week |
 | 5. API Layer | FastAPI endpoints for search, correlation query, and ingestion status; OpenAPI docs | 1 week |
@@ -219,7 +219,7 @@ This stack keeps the whole system inside the Python ecosystem, which shortens th
 | News source rate limits or licensing restrictions | Bootstrap on the historical datasets above; use free RSS feeds/APIs for live extension; avoid re-publishing full text |
 | Spurious correlations from limited backtest window | Use at least 2 years of data (FNSPID covers 1999–2023), report confidence intervals, and flag low-sample-size correlations |
 | Embedding drift as models change over time | Pin the embedding model version; re-embed the full corpus if the model is upgraded |
-| Vector store cost/scale at growth | Start with self-hosted Qdrant; keep Pinecone as a documented fallback with the same interface |
+| Vector store cost/scale at growth | Start with self-hosted Qdrant local storage; migrate to Qdrant Cloud if scale demands it |
 | Price data gaps (holidays, delistings) | Forward-fill or explicitly mark non-trading days before correlation computation |
 | Scope creep toward a trading system | Explicit out-of-scope section above; no execution/order logic in v1 |
 

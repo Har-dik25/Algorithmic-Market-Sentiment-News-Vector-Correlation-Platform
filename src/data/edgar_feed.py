@@ -3,10 +3,9 @@ import re
 import time
 import urllib.request
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import List, Dict, Optional, Any
 
-from src.config import RAW_DIR, ALL_TICKERS
+from src.config import ALL_TICKERS
 from src.data.schemas import CanonicalArticle
 from src.utils.logger import get_logger
 
