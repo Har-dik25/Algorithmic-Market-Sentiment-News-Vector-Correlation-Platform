@@ -15,6 +15,7 @@ import { PerformanceCard, SentimentGauge } from "@/components/signal-desk/perfor
 import { StrategyDistribution } from "@/components/signal-desk/strategy-distribution";
 import { AiScout } from "@/components/signal-desk/ai-scout";
 import { SectionHeader } from "@/components/signal-desk/section-header";
+import { LeadLagCorrelationSection } from "@/components/signal-desk/correlation-chart";
 import { KPIS } from "@/lib/signal-data";
 
 const SECTIONS = ["terminal", "live-signals", "watchlist", "signals", "analytics"];
@@ -97,8 +98,9 @@ export default function Home() {
                 <KpiCards kpis={KPIS} />
 
                 <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-                  <div className="xl:col-span-2">
+                  <div className="xl:col-span-2 space-y-4">
                     <MainChart />
+                    <LeadLagCorrelationSection />
                   </div>
                   <div className="xl:col-span-1">
                     <SignalFeed />
