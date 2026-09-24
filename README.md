@@ -41,14 +41,20 @@ flowchart TD
 | Module | File | Purpose |
 |---|---|---|
 | **Data Ingestion** | `src/data/download.py` | Live RSS feeds per ticker & FNSPID historical bootstrap |
+| **SEC EDGAR Feed** | `src/data/edgar_feed.py` | SEC 8-K / 10-K regulatory corporate filing feed |
+| **NSE India Feed** | `src/data/nse_feed.py` | Indian equity market news & price feed integration |
+| **HuggingFace Shards** | `src/data/fnspid_hf_feed.py` | Hugging Face FNSPID parquet dataset downloader |
 | **Data Extraction** | `src/data/extract.py` | Canonical normalization, ISO UTC timestamps, deterministic SHA-256 IDs |
 | **Cleaning & Chunking** | `src/pipeline/clean_chunk.py` | Boilerplate removal, near-duplicate filtering, passage chunking |
 | **Vector Embeddings** | `src/pipeline/embeddings.py` | SentenceTransformers `all-MiniLM-L6-v2` dense vector generator |
 | **Vector Store** | `src/pipeline/vector_store.py` | Qdrant local persistent collection with metadata filtering (<300ms p95) |
+| **Real-time Queue** | `src/pipeline/realtime_queue.py` | Async streaming ingestion worker for real-time news push |
 | **Market Prices** | `src/pipeline/price_feed.py` | Daily OHLCV price histories & log returns from Yahoo Finance |
 | **Correlation Engine** | `src/analytics/correlation.py` | Lead-lag cross-correlation across $[-5, +5]$ days with p-values & regime detection |
+| **ML Predictive Model** | `src/analytics/high_accuracy_model.py` | HistGradientBoosting + Technical Indicator Fusion for confidence-gated prediction |
 | **FastAPI REST API** | `src/api/main.py` | Serves health status, correlations, semantic search, and evidentiary articles |
-| **Interactive Dashboard** | `src/dashboard/app.py` | Streamlit + Plotly interactive analytics dashboard |
+| **Static HTML Dashboard**| `web/templates/index.html` | Fast static view served directly by FastAPI at `http://localhost:8000/` |
+| **Streamlit Dashboard** | `src/dashboard/app.py` | Full interactive Streamlit + Plotly analytics dashboard at `http://localhost:8501/` |
 
 ---
 

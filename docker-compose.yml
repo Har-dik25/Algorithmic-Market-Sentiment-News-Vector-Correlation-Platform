@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    container_name: market_sentiment_api
+    ports:
+      - "8000:8000"
+    command: python run_platform.py --serve-api
+    volumes:
+      - ./data:/app/data
+    environment:
+      - API_PORT=8000
+      - CORS_ORIGINS=*
+
+  dashboard:
+    build: .
+    container_name: market_sentiment_dashboard
+    ports:
+      - "8501:8501"
+    command: python run_platform.py --serve-dashboard
+    volumes:
+      - ./data:/app/data
+    environment:
+      - DASHBOARD_PORT=8501
+    depends_on:
+      - api

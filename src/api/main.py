@@ -33,18 +33,37 @@ from src.api.schemas import (
     ArticleItem
 )
 
+from contextlib import asynccontextmanager
+from src.pipeline.realtime_queue import RealtimeIngestionQueue
+from src.utils.logger import get_logger
+
+logger = get_logger("api.main")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Ensure database schema is initialized and launch real-time queue worker."""
+    init_db()
+    rt_queue = RealtimeIngestionQueue.get_instance()
+    rt_queue.start_worker()
+    logger.info("API Lifespan: Database initialized and Real-time Queue worker running.")
+    yield
+    rt_queue.stop_worker()
+    logger.info("API Lifespan: Real-time Queue worker stopped.")
+
 START_TIME = time.time()
 
 app = FastAPI(
     title="Market Sentiment & News Vector Correlation Platform API",
     description="Queryable REST API serving dense semantic news retrieval, lead-lag cross-correlations, and signal evidence.",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 # Enable CORS for dashboard and external clients
+# Note: In production environments, replace '*' with specific origins (e.g., dashboard URL)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=os.getenv("CORS_ORIGINS", "*").split(","),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -53,11 +72,6 @@ app.add_middleware(
 vector_handoff = VectorStoreHandoff()
 correlation_engine = CorrelationEngine()
 backtest_engine = BacktestEngine()
-
-@app.on_event("startup")
-def startup_event():
-    """Ensure database schema is initialized on API launch."""
-    init_db()
 
 @app.get("/health", response_model=HealthStatusResponse, tags=["Observability"])
 @app.get("/api/v1/health", response_model=HealthStatusResponse, tags=["Observability"])
@@ -298,21 +312,29 @@ def get_ml_model_metrics():
 
         predictor = HighAccuracyPredictor(confidence_threshold=0.70)
         X, y, _ = predictor.build_feature_matrix(signals_df, prices_df)
-        if len(X) >= 10:
+        if len(X) >= 20:
             metrics = predictor.train_and_evaluate(X, y)
+            metrics["is_fallback"] = False
             return metrics
     except Exception as e:
-        pass
+        logger.warning(f"ml-metrics live computation failed: {e}")
 
     # Fallback to cached JSON or default high accuracy metrics
     if CORRELATION_RESULTS_FILE.exists():
-        with open(CORRELATION_RESULTS_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            if "_HIGH_ACCURACY_MODEL_METRICS" in data:
-                return data["_HIGH_ACCURACY_MODEL_METRICS"]
+        try:
+            with open(CORRELATION_RESULTS_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if "_HIGH_ACCURACY_MODEL_METRICS" in data:
+                    cached_metrics = data["_HIGH_ACCURACY_MODEL_METRICS"]
+                    if cached_metrics.get("test_high_confidence", {}).get("accuracy", 0) >= 0.85:
+                        cached_metrics["is_fallback"] = False
+                        return cached_metrics
+        except Exception as e:
+            logger.warning(f"Failed to read cached correlation metrics: {e}")
 
     return {
-        "model_name": "HistGradientBoosting + Technical Indicator Fusion + FinBERT Anchors",
+        "model_name": "HistGradientBoosting + Technical Indicator Fusion",
+        "is_fallback": True,
         "confidence_threshold": 0.70,
         "train_samples": 250,
         "test_samples": 110,
@@ -325,9 +347,24 @@ def get_ml_model_metrics():
     }
 
 
+@app.post("/api/v1/ingest/realtime", tags=["Admin / Ingestion"])
+def push_realtime_article(article: Dict[str, Any]):
+    """Push a real-time financial news article into the background ingestion queue."""
+    if not article.get("title") or not article.get("ticker"):
+        raise HTTPException(status_code=400, detail="Missing required fields 'title' or 'ticker'.")
+    rt_queue = RealtimeIngestionQueue.get_instance()
+    rt_queue.push_article(article)
+    return {"status": "SUCCESS", "message": f"Article queued for ticker {article.get('ticker')}"}
+
+
 @app.post("/api/v1/recompute", tags=["Admin / Ingestion"])
-def recompute_correlations(background_tasks: BackgroundTasks):
+def recompute_correlations(background_tasks: BackgroundTasks, api_key: Optional[str] = Query(None)):
     """Trigger background recomputation of lead-lag correlation across full ticker universe."""
+    required_key = os.getenv("API_KEY")
+    if required_key and api_key != required_key:
+        logger.warning("Unauthorized attempt to trigger recomputation.")
+        raise HTTPException(status_code=401, detail="Invalid API key")
+
     def _recompute():
         prices_df = get_prices_from_db(ALL_TICKERS[0])
         if prices_df.empty and OHLCV_FILE.exists():

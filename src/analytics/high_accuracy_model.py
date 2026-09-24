@@ -120,10 +120,12 @@ class HighAccuracyPredictor:
         Labels significant movements (|return| > threshold) as 1 (Up) vs 0 (Down).
         """
         # Ensure tech indicators computed on prices
-        prices_enriched = compute_technical_indicators(prices_df)
+        signals = signals_df.copy()
+        if "ticker" not in signals.columns:
+            signals["ticker"] = "NVDA"
 
         merged = pd.merge(
-            signals_df,
+            signals,
             prices_enriched,
             on=["ticker", "date"],
             how="inner"

@@ -110,9 +110,19 @@ def main():
     if args.compute_only or (not args.serve_api and not args.serve_dashboard):
         run_full_computation(tickers=tickers, force=args.force_recompute)
 
-    if args.serve_api or args.serve_dashboard:
-        logger.info(f"Starting FastAPI & Dashboard server on port {API_PORT}...")
-        subprocess.run([sys.executable, "-m", "uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", str(API_PORT)])
+    processes = []
+    if args.serve_api:
+        logger.info(f"Starting FastAPI server on http://localhost:{API_PORT}...")
+        p_api = subprocess.Popen([sys.executable, "-m", "uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", str(API_PORT)])
+        processes.append(p_api)
+
+    if args.serve_dashboard:
+        logger.info(f"Starting Interactive Streamlit Dashboard on http://localhost:{DASHBOARD_PORT}...")
+        p_dash = subprocess.Popen([sys.executable, "-m", "streamlit", "run", "src/dashboard/app.py", "--server.port", str(DASHBOARD_PORT)])
+        processes.append(p_dash)
+
+    for p in processes:
+        p.wait()
 
 if __name__ == "__main__":
     main()

@@ -56,8 +56,8 @@ There is no lightweight, self-hostable platform that (a) represents news at the 
 
 - Scraping/ingesting news from a fixed set of financial news sources, RSS feeds, and archival datasets
 - Text cleaning, deduplication, and chunking of articles
-- Embedding generation via a sentence-transformer or LLM embedding model, orchestrated through LangChain
-- Vector storage and similarity search in Qdrant (self-hosted) or Pinecone (managed)
+- Embedding generation via SentenceTransformers (`all-MiniLM-L6-v2`) for fast 384-d dense vector generation
+- Vector storage and similarity search in Qdrant (local persistent collection)
 - Daily-resolution price data ingestion for the covered tickers
 - Lead-lag cross-correlation computation between the news-vector signal (e.g., mean embedding drift or sentiment-projected score) and price returns
 - A FastAPI service exposing ingestion status, search, and correlation-query endpoints
