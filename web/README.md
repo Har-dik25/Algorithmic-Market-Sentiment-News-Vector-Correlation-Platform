@@ -1,57 +1,90 @@
-# Signal Desk — Frontend
+# Signal Desk — Pro Trading Signals Terminal
 
-A standalone, professional-grade frontend for the Algorithmic Market Sentiment & News Vector Correlation Platform. Plain HTML/CSS/JS — no build step, no framework, no backend included.
+A professional, production-grade trading-signals terminal frontend built with
+**Next.js 16 (App Router)**, **TypeScript**, **Tailwind CSS 4**, **shadcn/ui**,
+**Recharts**, and **Framer Motion**.
 
-## Run it
+![Signal Desk](https://img.shields.io/badge/Next.js-16-black) ![TS](https://img.shields.io/badge/TypeScript-5-blue) ![Tailwind](https://img.shields.io/badge/Tailwind-4-38bdf8)
 
-Just open `index.html` in a browser, or serve the folder:
+## ✨ Features
+
+- **Live trading terminal** — KPI cards with sparklines & deltas, BTC/USDT price
+  chart with signal entry markers, and a streaming live signal feed.
+- **Real-time feel** — simulated price ticking with green/red flash, streaming
+  signal cards via `AnimatePresence`, pulsing live indicators, marquee ticker tape.
+- **Signals log** — filterable table (status / direction / search) backed by a
+  real `/api/signals` route, with loading skeletons, confidence bars & risk metrics.
+- **Watchlist** — multi-asset (Crypto, Forex, Stocks, Commodities, Indices) with
+  live prices, 24h change, volume and trend sparklines.
+- **Analytics** — equity curve (area), monthly P&L (bar), strategy-mix donut, and a
+  fear/greed sentiment gauge.
+- **AI Scout** — rotating AI market-intelligence insights.
+- **Polished UX** — dark/light themes, scroll-spy sidebar navigation, sticky
+  topbar with ⌘K search, live UTC market clock, notifications, command palette.
+- **Responsive** — mobile-first; sidebar collapses to a sheet, tables scroll,
+  charts reflow. Sticky footer with ticker tape on every page.
+
+## 🛠 Tech Stack
+
+| Area        | Tech                                              |
+| ----------- | ------------------------------------------------- |
+| Framework   | Next.js 16 (App Router)                            |
+| Language    | TypeScript 5                                       |
+| Styling     | Tailwind CSS 4 + shadcn/ui (New York)             |
+| Charts      | Recharts                                          |
+| Animation   | Framer Motion                                     |
+| Icons       | lucide-react                                       |
+| Fonts       | Geist Sans / Mono + JetBrains Mono (tabular nums) |
+
+## 🚀 Getting Started
 
 ```bash
-python -m http.server 5500
-# then visit http://localhost:5500
+# install dependencies
+bun install
+
+# start the dev server (http://localhost:3000)
+bun run dev
 ```
 
-It loads with **generated demo data** so every panel is browsable immediately, with no backend running.
+> The app uses a local SQLite database via Prisma (already configured). If you
+> need to (re)create the schema, run `bun run db:push`. The demo data is
+> generated in-memory by `src/lib/signal-data.ts` and served through the API
+> routes — no external services required.
 
-## Connect it to the real API
+## 📁 Project Structure
 
-1. Start the platform's FastAPI backend (`python run_platform.py --serve-api` in the main project repo).
-2. In the top-right **API** field, enter the backend's URL (defaults to `http://localhost:8000`).
-3. Click **connect**.
+```
+src/
+├─ app/
+│  ├─ api/
+│  │  ├─ signals/route.ts   # filterable signals endpoint
+│  │  ├─ market/route.ts     # assets / watchlist data
+│  │  └─ stats/route.ts      # KPIs, equity, monthly, sentiment
+│  ├─ globals.css            # trading theme (dark/light), animations
+│  ├─ layout.tsx             # metadata, ThemeProvider, fonts
+│  └─ page.tsx               # the terminal dashboard (single route)
+├─ components/
+│  ├─ signal-desk/           # all terminal UI components
+│  │  ├─ sidebar.tsx, topbar.tsx, footer.tsx, ticker-tape.tsx
+│  │  ├─ kpi-cards.tsx, main-chart.tsx, signal-feed.tsx
+│  │  ├─ watchlist.tsx, signals-table.tsx
+│  │  ├─ performance.tsx, strategy-distribution.tsx, ai-scout.tsx
+│  │  ├─ sparkline.tsx, logo.tsx, section-header.tsx, ...
+│  └─ ui/                    # shadcn/ui primitives
+└─ lib/
+   ├─ signal-data.ts         # types + deterministic mock market data
+   ├─ db.ts                  # Prisma client
+   └─ utils.ts
+```
 
-If the health check succeeds, the status pill switches to "live" and a toast confirms the connection. If any individual call fails afterward, that panel silently falls back to demo data instead of breaking, so a partially-running backend degrades gracefully.
+## 🎨 Design Notes
 
-Endpoints used:
-- `GET /health`, `GET /tickers`
-- `GET /correlation/{ticker}`, `GET /signals/{ticker}`, `GET /api/v1/price-data`
-- `GET /evidence/{ticker}?date=`, `GET /search?query=&ticker=`
-- `GET /backtest/{ticker}`, `GET /api/v1/ml-metrics` (feed the KPI strip)
+- Color tokens use `oklch()` with semantic `--success / --danger / --warning`
+  variables so the whole UI stays consistent across themes.
+- Financial numbers use a monospace stack + `tabular-nums` for perfect alignment.
+- Default theme is **dark** (trading-terminal aesthetic); toggle to light from
+  the topbar.
 
-## Features
+---
 
-- **KPI strip** — tracked tickers, indexed articles, backtest accuracy, last correlation run, and model confidence at a glance, refreshed on every ticker change.
-- **Sector filter chips + live search** in the sidebar, on top of the full ticker watchlist.
-- **Keyboard navigation** — `↑`/`↓` to move through the watchlist, `Enter` to select.
-- **Compare mode** — overlay a second ticker's correlation curve (dashed) on the primary chart to eyeball which one leads.
-- **Click-to-evidence** — click any point on the price/signal overlay chart to jump straight to that date's evidence panel.
-- **Semantic search** panel against the vector store, with similarity scores.
-- **Chart export** — download the correlation chart as a PNG.
-- **Toast notifications** for connection state, search/evidence errors, and compare-mode changes.
-- **Skeleton loading states** on both charts while data is in flight.
-- **Watchlist regime dots** — every ticker in the sidebar shows a small lead/lag/coincident dot, lazily loaded and cached per session.
-- **Auto-refresh** — while connected, the health check and KPI strip quietly re-poll every 30 seconds; if the backend drops, it falls back to demo data automatically with a toast.
-- **Recompute trigger** — a top-bar button that calls the backend's `/api/v1/recompute` endpoint (with a confirmation prompt) to kick off a full correlation recompute.
-- **Remembers you** — your API URL, active ticker, compare selection, and sector filter persist in `localStorage` between visits.
-- **Help panel** (the `?` button) documenting shortcuts and features in-app.
-- Fully responsive down to mobile, visible keyboard focus rings, and `prefers-reduced-motion` respected.
-
-## Files
-
-- `index.html` — page structure
-- `style.css` — design system (dark console theme, one accent color, semantic lead/lag/coincident colors, toasts, skeletons)
-- `app.js` — data fetching, demo-data fallback, compare mode, keyboard nav, and Plotly chart rendering (Plotly loaded from CDN)
-
-## Notes
-
-- No CORS proxy is included — if your backend is on a different origin than the page, make sure its CORS settings allow it (the sample backend's `CORSMiddleware` already allows `*`).
-- This package is frontend-only by design: there's no server code, database, or embedding pipeline here — pair it with the backend from the main repo to see real signals.
+Built with Z.ai Code.

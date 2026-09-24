@@ -379,21 +379,37 @@ def recompute_correlations(background_tasks: BackgroundTasks, api_key: Optional[
     background_tasks.add_task(_recompute)
     return {"message": "Correlation recomputation initiated across ticker universe in background."}
 
-# Signal Desk Web Dashboard UI
+# Signal Desk Web Dashboard Link Page
 @app.get("/", response_class=HTMLResponse, tags=["Dashboard UI"])
 @app.get("/dashboard", response_class=HTMLResponse, tags=["Dashboard UI"])
 def render_dashboard():
-    """Serve the Signal Desk web dashboard console."""
-    html_path = PROJECT_ROOT / "web" / "index.html"
-    if html_path.exists():
-        with open(html_path, "r", encoding="utf-8") as f:
-            return HTMLResponse(content=f.read())
-    return HTMLResponse(content="<h1>Signal Desk Dashboard Not Found</h1>", status_code=404)
-
-@app.get("/style.css", include_in_schema=False)
-def get_style_css():
-    return FileResponse(PROJECT_ROOT / "web" / "style.css", media_type="text/css")
-
-@app.get("/app.js", include_in_schema=False)
-def get_app_js():
-    return FileResponse(PROJECT_ROOT / "web" / "app.js", media_type="application/javascript")
+    """Serve Signal Desk landing info page pointing to Next.js console & Swagger UI."""
+    return HTMLResponse(content="""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Signal Desk API & Platform</title>
+            <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0b0f19; color: #f3f4f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+                .card { background: #111827; border: 1px solid #1f2937; padding: 2.5rem; border-radius: 12px; max-width: 520px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); }
+                h1 { font-size: 1.75rem; color: #38bdf8; margin-bottom: 0.5rem; }
+                p { color: #9ca3af; font-size: 0.95rem; line-height: 1.5; }
+                .btn { display: inline-block; margin: 0.5rem; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; text-decoration: none; transition: all 0.2s; }
+                .btn-primary { background: #2563eb; color: white; }
+                .btn-primary:hover { background: #1d4ed8; }
+                .btn-secondary { background: #1f2937; color: #e5e7eb; border: 1px solid #374151; }
+                .btn-secondary:hover { background: #374151; }
+            </style>
+        </head>
+        <body>
+            <div class="card">
+                <h1>◆ Signal Desk Engine</h1>
+                <p>Algorithmic Market Sentiment & News Vector Correlation Platform</p>
+                <div style="margin-top: 1.5rem;">
+                    <a href="http://localhost:3000" class="btn btn-primary">Open Signal Desk Console</a>
+                    <a href="/docs" class="btn btn-secondary">API Swagger Docs</a>
+                </div>
+            </div>
+        </body>
+        </html>
+    """)

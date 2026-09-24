@@ -83,8 +83,7 @@ flowchart LR
   subgraph SERVE ["⑤ Serving"]
     direction TB
     API["FastAPI REST<br/>:8000/docs"]
-    WEB["Signal Desk Console<br/>:8000"]
-    DASH["Streamlit Analytics<br/>:8501"]
+    WEB["Signal Desk Next.js Console<br/>:3000"]
   end
 
   RSS --> CLN
@@ -99,7 +98,6 @@ flowchart LR
   ML --> API
   QDR --> API
   API --> WEB
-  API --> DASH
 ```
 
 ---
@@ -187,10 +185,14 @@ Algorithmic-Market-Sentiment-News-Vector-Correlation-Platform/
 │   └── utils/
 │       └── logger.py                # Structured logging configuration
 │
-├── web/                             # Signal Desk — static HTML/JS/CSS command console
-│   ├── index.html
-│   ├── app.js
-│   └── style.css
+├── web/                             # Signal Desk — Next.js 16 (React / Tailwind / shadcn) UI
+│   ├── src/
+│   │   ├── app/                     # Next.js App Router pages & API proxy routes
+│   │   ├── components/              # Signal Desk dashboard widgets & UI components
+│   │   └── lib/                     # Signal data definitions & utilities
+│   ├── public/                      # Static assets & brand graphics
+│   ├── package.json
+│   └── next.config.ts
 │
 ├── tests/
 │   ├── test_extraction.py           # Data pipeline unit tests
@@ -248,11 +250,11 @@ python run_platform.py --compute-only
 # Option A: API only (Swagger UI at http://localhost:8000/docs)
 python run_platform.py --serve-api
 
-# Option B: Interactive dashboard only (http://localhost:8501)
-python run_platform.py --serve-dashboard
+# Option B: Signal Desk Next.js Frontend (http://localhost:3000)
+cd web && npm run dev
 
-# Option C: Everything — API + Dashboard concurrently
-python run_platform.py --serve-api --serve-dashboard
+# Option C: Everything — API + Next.js Frontend concurrently
+python run_platform.py --serve-api --serve-frontend
 ```
 
 ### 4. Docker (Alternative)
@@ -314,8 +316,8 @@ python -m pytest tests/ -v
 | **Vector DB** | Qdrant (local persistent) | Sub-300ms semantic search with metadata filtering |
 | **ML** | scikit-learn (HistGradientBoosting) | Confidence-gated directional prediction |
 | **Analytics** | NumPy · SciPy · pandas | Cross-correlation, statistical testing, time-series alignment |
-| **Visualization** | Plotly · Streamlit | Interactive correlation curves and signal dashboards |
-| **Frontend** | Signal Desk (vanilla HTML/JS/CSS) | Glassmorphic dark-mode command console |
+| **Visualization** | Recharts · Framer Motion | Interactive trading charts, sparklines, and signal feeds |
+| **Frontend** | Next.js 16 (React 19 / Tailwind / shadcn) | Full-featured Signal Desk trading terminal console |
 | **Data** | Apache Parquet · SQLite | Columnar storage for articles/prices, relational for metadata |
 | **Infra** | Docker · GitHub Actions | Containerized deployment and CI pipeline |
 

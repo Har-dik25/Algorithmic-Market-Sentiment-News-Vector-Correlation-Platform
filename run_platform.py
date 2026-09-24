@@ -99,7 +99,7 @@ def main():
     parser = argparse.ArgumentParser(description="Algorithmic Market Sentiment & News Vector Correlation Platform")
     parser.add_argument("--compute-only", action="store_true", help="Run the full data/analytics computation without launching UI/API")
     parser.add_argument("--serve-api", action="store_true", help="Launch FastAPI server")
-    parser.add_argument("--serve-dashboard", action="store_true", help="Launch Dashboard server")
+    parser.add_argument("--serve-dashboard", "--serve-frontend", action="store_true", dest="serve_frontend", help="Launch Signal Desk Next.js Frontend")
     parser.add_argument("--force-recompute", action="store_true", help="Force recomputation even if data already exists")
     parser.add_argument("--tickers", type=str, default="", help="Comma-separated tickers")
     args = parser.parse_args()
@@ -107,7 +107,7 @@ def main():
     tickers = [t.strip().upper() for t in args.tickers.split(",") if t.strip()] if args.tickers else None
 
     # If no specific service requested, run computation first
-    if args.compute_only or (not args.serve_api and not args.serve_dashboard):
+    if args.compute_only or (not args.serve_api and not args.serve_frontend):
         run_full_computation(tickers=tickers, force=args.force_recompute)
 
     processes = []
@@ -116,10 +116,11 @@ def main():
         p_api = subprocess.Popen([sys.executable, "-m", "uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", str(API_PORT)])
         processes.append(p_api)
 
-    if args.serve_dashboard:
-        logger.info(f"Starting Interactive Streamlit Dashboard on http://localhost:{DASHBOARD_PORT}...")
-        p_dash = subprocess.Popen([sys.executable, "-m", "streamlit", "run", "src/dashboard/app.py", "--server.port", str(DASHBOARD_PORT)])
-        processes.append(p_dash)
+    if args.serve_frontend:
+        logger.info("Starting Signal Desk Next.js Frontend on http://localhost:3000...")
+        web_dir = PROJECT_ROOT / "web"
+        p_front = subprocess.Popen(["npm", "run", "dev"], cwd=str(web_dir), shell=True)
+        processes.append(p_front)
 
     for p in processes:
         p.wait()
