@@ -4,9 +4,6 @@ import {
   ListChecks,
   BarChart3,
   LineChart,
-  Wallet,
-  Bell,
-  Settings,
   type LucideIcon,
 } from "lucide-react";
 
@@ -24,7 +21,4 @@ export const NAV_ITEMS: NavItem[] = [
   { id: "watchlist", label: "Watchlist", icon: ListChecks, href: "#watchlist" },
   { id: "signals", label: "Signals Log", icon: BarChart3, href: "#signals" },
   { id: "analytics", label: "Analytics", icon: LineChart, href: "#analytics" },
-  { id: "portfolio", label: "Portfolio", icon: Wallet, href: "#portfolio" },
-  { id: "alerts", label: "Alerts", icon: Bell, href: "#alerts" },
-  { id: "settings", label: "Settings", icon: Settings, href: "#settings" },
 ];

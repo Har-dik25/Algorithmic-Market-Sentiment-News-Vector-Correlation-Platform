@@ -69,15 +69,15 @@ export default function Home() {
                   <div>
                     <div className="flex items-center gap-2">
                       <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">
-                        Trading Terminal
+                        Market Sentiment Vector Terminal
                       </h1>
                       <span className="inline-flex items-center gap-1 rounded-full border border-success/20 bg-success/10 px-2 py-0.5 text-[10px] font-semibold text-success">
                         <span className="h-1.5 w-1.5 rounded-full bg-success pulse-dot-live" />
-                        LIVE
+                        LIVE PIPELINE
                       </span>
                     </div>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      Real-time signals, market depth &amp; performance — all in one desk.
+                      Real-time news vector embeddings, Qdrant search &amp; lead-lag price correlation.
                     </p>
                   </div>
                   <div className="flex items-center gap-2">

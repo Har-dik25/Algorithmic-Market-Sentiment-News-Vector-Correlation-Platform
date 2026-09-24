@@ -2,25 +2,24 @@
 
 import * as React from "react";
 import { motion } from "framer-motion";
-import { Sparkles, ArrowRight } from "lucide-react";
+import { Activity, ArrowRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 
 const INSIGHTS = [
   {
-    tag: "Momentum Shift",
-    text: "BTC funding flipped positive across top 3 venues. Long bias increasing — watch for liquidation cascade above $69.2k.",
+    tag: "Vector Correlation",
+    text: "NVDA 30-day news sentiment centroid vector exhibits +3 day lead correlation with daily OHLCV return series (r = 0.47, p < 0.01).",
     tone: "success",
   },
   {
-    tag: "Liquidity Alert",
-    text: "Resting liquidity detected below ETH $3,480. High-probability sweep setup forming on the 4H timeframe.",
-    tone: "warning",
+    tag: "Regulatory Ingestion",
+    text: "SEC EDGAR 8-K filings ingested for AAPL & MSFT. 384-dimensional dense vectors indexed into Qdrant storage.",
+    tone: "info",
   },
   {
-    tag: "Correlation Break",
-    text: "NVDA / NASDAQ 30-day correlation dropped to 0.62. Divergence may signal sector rotation.",
-    tone: "info",
+    tag: "Indian Market Signal",
+    text: "NSE Nifty 50 sentiment feed (RELIANCE, TCS) synchronized with Yahoo Finance daily log returns.",
+    tone: "warning",
   },
 ];
 
@@ -45,12 +44,12 @@ export function AiScout() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/15">
-            <Sparkles className="h-3.5 w-3.5 text-primary" />
+            <Activity className="h-3.5 w-3.5 text-primary" />
           </div>
-          <h3 className="text-sm font-semibold">AI Scout</h3>
+          <h3 className="text-sm font-semibold">Vector Intelligence</h3>
         </div>
         <span className="rounded-full bg-success/15 px-1.5 py-0.5 text-[9px] font-bold uppercase text-success">
-          Online
+          Live Feed
         </span>
       </div>
 
@@ -58,38 +57,36 @@ export function AiScout() {
         key={insight.tag}
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="mt-3"
+        transition={{ duration: 0.3 }}
+        className="mt-3 space-y-2"
       >
         <span
-          className={
-            "inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-semibold " +
-            TONE[insight.tone]
-          }
+          className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-semibold tracking-wide ${TONE[insight.tone]}`}
         >
           {insight.tag}
         </span>
-        <p className="mt-2 text-[13px] leading-relaxed text-foreground/90">{insight.text}</p>
+        <p className="text-xs text-muted-foreground leading-relaxed font-mono">
+          {insight.text}
+        </p>
       </motion.div>
 
-      <div className="mt-3 flex items-center justify-between">
-        <div className="flex gap-1.5">
+      <div className="mt-3 flex items-center justify-between pt-2 border-t border-border/40">
+        <div className="flex gap-1">
           {INSIGHTS.map((_, idx) => (
-            <button
+            <span
               key={idx}
-              onClick={() => setI(idx)}
-              className={
-                "h-1.5 rounded-full transition-all " +
-                (idx === i ? "w-5 bg-primary" : "w-1.5 bg-muted-foreground/40")
-              }
-              aria-label={`Insight ${idx + 1}`}
+              className={`h-1.5 rounded-full transition-all ${
+                idx === i ? "w-4 bg-primary" : "w-1.5 bg-muted"
+              }`}
             />
           ))}
         </div>
-        <Button variant="ghost" size="sm" className="h-7 gap-1 text-[11px] text-muted-foreground">
-          Ask Scout
-          <ArrowRight className="h-3 w-3" />
-        </Button>
+        <button
+          onClick={() => setI((p) => (p + 1) % INSIGHTS.length)}
+          className="flex items-center gap-1 text-[11px] font-medium text-primary hover:underline"
+        >
+          Next signal <ArrowRight className="h-3 w-3" />
+        </button>
       </div>
     </Card>
   );

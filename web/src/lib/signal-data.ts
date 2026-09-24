@@ -74,18 +74,20 @@ function genSpark(base: number, points = 16, vol = 0.02): number[] {
 
 // ---------- Assets ----------
 const ASSET_DEFS: { symbol: string; name: string; klass: AssetClass; price: number }[] = [
-  { symbol: "BTC/USDT", name: "Bitcoin", klass: "Crypto", price: 67842.12 },
-  { symbol: "ETH/USDT", name: "Ethereum", klass: "Crypto", price: 3521.44 },
-  { symbol: "SOL/USDT", name: "Solana", klass: "Crypto", price: 172.83 },
-  { symbol: "XAU/USD", name: "Gold", klass: "Commodities", price: 2358.4 },
-  { symbol: "EUR/USD", name: "Euro / Dollar", klass: "Forex", price: 1.0842 },
-  { symbol: "GBP/JPY", name: "Pound / Yen", klass: "Forex", price: 198.37 },
-  { symbol: "NVDA", name: "Nvidia Corp", klass: "Stocks", price: 124.58 },
-  { symbol: "TSLA", name: "Tesla Inc", klass: "Stocks", price: 248.92 },
-  { symbol: "US100", name: "Nasdaq 100", klass: "Indices", price: 19842.5 },
-  { symbol: "CL/USD", name: "Crude Oil", klass: "Commodities", price: 78.42 },
-  { symbol: "AVAX/USDT", name: "Avalanche", klass: "Crypto", price: 36.74 },
-  { symbol: "LINK/USDT", name: "Chainlink", klass: "Crypto", price: 17.21 },
+  { symbol: "NVDA", name: "NVIDIA Corporation", klass: "Stocks", price: 128.45 },
+  { symbol: "AAPL", name: "Apple Inc.", klass: "Stocks", price: 224.30 },
+  { symbol: "MSFT", name: "Microsoft Corporation", klass: "Stocks", price: 448.90 },
+  { symbol: "TSLA", name: "Tesla, Inc.", klass: "Stocks", price: 254.80 },
+  { symbol: "AMZN", name: "Amazon.com, Inc.", klass: "Stocks", price: 186.20 },
+  { symbol: "GOOGL", name: "Alphabet Inc.", klass: "Stocks", price: 179.50 },
+  { symbol: "META", name: "Meta Platforms Inc.", klass: "Stocks", price: 502.10 },
+  { symbol: "AMD", name: "Advanced Micro Devices", klass: "Stocks", price: 156.40 },
+  { symbol: "RELIANCE.NS", name: "Reliance Industries", klass: "Stocks", price: 2940.50 },
+  { symbol: "TCS.NS", name: "Tata Consultancy Services", klass: "Stocks", price: 3820.00 },
+  { symbol: "INFY.NS", name: "Infosys Limited", klass: "Stocks", price: 1540.25 },
+  { symbol: "BTC-USD", name: "Bitcoin USD", klass: "Crypto", price: 64820.00 },
+  { symbol: "GC=F", name: "Gold Futures", klass: "Commodities", price: 2368.50 },
+  { symbol: "^GSPC", name: "S&P 500 Index", klass: "Indices", price: 5460.20 },
 ];
 
 export const ASSETS: Asset[] = ASSET_DEFS.map((a) => {
@@ -100,14 +102,14 @@ export const ASSETS: Asset[] = ASSET_DEFS.map((a) => {
 
 // ---------- Strategies ----------
 const STRATEGIES = [
-  "Breakout Momentum",
-  "Mean Reversion",
-  "Trend Following",
-  "Liquidity Sweep",
-  "Order Block Retest",
-  "Fibonacci Confluence",
-  "Volume Profile",
-  "Smart Money Concept",
+  "News Vector Lead-Lag",
+  "Centroid Shift Correlation",
+  "Sentiment Momentum",
+  "SEC 8-K Regulatory Filing",
+  "NSE Sentiment Confluence",
+  "Dense Vector Search Spike",
+  "HistGradientBoosting ML",
+  "Macro Sentiment Drift",
 ];
 
 const STATUSES: SignalStatus[] = ["ACTIVE", "PENDING", "TP_HIT", "SL_HIT", "CLOSED"];

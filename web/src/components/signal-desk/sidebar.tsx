@@ -19,19 +19,19 @@ interface SidebarProps {
 function SidebarBody({ activeId, onNavigate }: SidebarProps) {
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center gap-2.5 px-5 h-16 shrink-0">
+      <div className="flex items-center gap-2.5 px-5 h-16 shrink-0 border-b border-border/40">
         <Logo className="h-8 w-8" />
         <div className="flex flex-col leading-none">
           <span className="font-semibold tracking-tight text-[15px]">Signal Desk</span>
           <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            Pro Terminal
+            Vector Engine
           </span>
         </div>
       </div>
 
-      <nav className="flex-1 px-3 py-2 space-y-1 scroll-thin overflow-y-auto">
-        <p className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/70">
-          Workspace
+      <nav className="flex-1 px-3 py-4 space-y-1 scroll-thin overflow-y-auto">
+        <p className="px-3 pt-1 pb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/70">
+          Navigation
         </p>
         {NAV_ITEMS.map((item) => {
           const active = activeId === item.id;
@@ -42,7 +42,7 @@ function SidebarBody({ activeId, onNavigate }: SidebarProps) {
               href={item.href}
               onClick={() => onNavigate(item.id)}
               className={cn(
-                "group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                 active
                   ? "text-foreground"
                   : "text-muted-foreground hover:text-foreground hover:bg-accent/60"
@@ -74,16 +74,10 @@ function SidebarBody({ activeId, onNavigate }: SidebarProps) {
         })}
       </nav>
 
-      <div className="p-3">
-        <div className="relative overflow-hidden rounded-xl border border-border/70 bg-gradient-to-br from-accent/60 to-transparent p-4">
-          <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-primary/10 blur-2xl" />
-          <p className="text-xs font-semibold">Upgrade to Quantum</p>
-          <p className="mt-1 text-[11px] text-muted-foreground leading-relaxed">
-            AI-powered signal scoring & on-chain alpha.
-          </p>
-          <Button size="sm" className="mt-3 h-8 w-full text-xs">
-            Upgrade Plan
-          </Button>
+      <div className="p-4 border-t border-border/40">
+        <div className="flex items-center gap-2.5 px-2 py-1 text-xs text-muted-foreground">
+          <span className="h-2 w-2 rounded-full bg-success" />
+          <span>Qdrant DB: Active</span>
         </div>
       </div>
     </div>
