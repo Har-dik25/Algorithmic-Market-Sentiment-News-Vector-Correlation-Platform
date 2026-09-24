@@ -11,6 +11,7 @@ import { MobileSidebar } from "./sidebar";
 import { useClock } from "./use-clock";
 import { Logo } from "./logo";
 import { ASSETS, fmtPrice } from "@/lib/signal-data";
+import { getApiBaseUrl } from "@/lib/api-config";
 
 interface HealthData {
   status: string;
@@ -26,7 +27,8 @@ function OperationalHealthBar() {
   React.useEffect(() => {
     async function fetchHealth() {
       try {
-        const res = await fetch("http://127.0.0.1:8000/health");
+        const baseUrl = getApiBaseUrl();
+        const res = await fetch(`${baseUrl}/health`);
         if (res.ok) {
           const data = await res.json();
           setHealth(data);

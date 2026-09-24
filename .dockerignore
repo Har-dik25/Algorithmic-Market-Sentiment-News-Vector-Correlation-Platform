@@ -1,0 +1,35 @@
+# ── Git ──────────────────────────────────────────────────
+.git
+.gitignore
+
+# ── Python caches ────────────────────────────────────────
+__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+.mypy_cache
+
+# ── Node / Frontend (handled by web/Dockerfile) ─────────
+web/node_modules
+web/.next
+
+# ── Runtime data (mounted as volume) ────────────────────
+data/
+*.db
+*.sqlite
+
+# ── IDE / OS ────────────────────────────────────────────
+.vscode
+.idea
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ── Docs & misc ─────────────────────────────────────────
+*.md
+!requirements.txt
+LICENSE
+.env
+.env.*
+!.env.example

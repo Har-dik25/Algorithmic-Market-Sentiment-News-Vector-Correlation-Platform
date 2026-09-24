@@ -1,27 +1,87 @@
-version: '3.8'
-
 services:
+  # ── Qdrant Vector Search Engine (384-d Embeddings) ─────
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: market_sentiment_qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_storage:/qdrant/storage
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  # ── FastAPI Backend Engine ─────────────────────────────
   api:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: market_sentiment_api
+    restart: unless-stopped
     ports:
       - "8000:8000"
     command: python run_platform.py --serve-api
     volumes:
-      - ./data:/app/data
+      - app_data:/app/data
     environment:
       - API_PORT=8000
       - CORS_ORIGINS=*
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+    depends_on:
+      qdrant:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
+  # ── Next.js Signal Desk Console ────────────────────────
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: market_sentiment_web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - PORT=3000
+    depends_on:
+      api:
+        condition: service_healthy
+
+  # ── Streamlit Analytics Companion (optional) ───────────
   dashboard:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: market_sentiment_dashboard
+    restart: unless-stopped
     ports:
       - "8501:8501"
     command: python run_platform.py --serve-dashboard
     volumes:
-      - ./data:/app/data
+      - app_data:/app/data
     environment:
       - DASHBOARD_PORT=8501
     depends_on:
-      - api
+      api:
+        condition: service_healthy
+    profiles:
+      - full        # only starts with `docker compose --profile full up`
+
+volumes:
+  qdrant_storage:
+    driver: local
+  app_data:
+    driver: local

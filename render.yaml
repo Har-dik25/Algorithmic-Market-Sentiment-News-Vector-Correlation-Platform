@@ -1,0 +1,39 @@
+services:
+  # ── FastAPI Backend Service ──────────────────────────────
+  - type: web
+    name: market-sentiment-api
+    runtime: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python run_platform.py --serve-api
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: API_PORT
+        value: 10000
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: QDRANT_MODE
+        value: memory
+    healthCheckPath: /health
+
+  # ── Next.js Signal Desk Console ──────────────────────────
+  - type: web
+    name: market-sentiment-web
+    runtime: node
+    region: oregon
+    plan: free
+    rootDir: web
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_VERSION
+        value: 20.15.0
+      - key: PORT
+        value: 10000
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: market-sentiment-api
+          property: host

@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ASSETS } from "@/lib/signal-data";
+import { getApiBaseUrl } from "@/lib/api-config";
 import { cn } from "@/lib/utils";
 
 const TICKERS = ASSETS.map((a) => ({
@@ -101,8 +102,9 @@ export function LeadLagCorrelationSection({ selectedTicker = "NVDA", onTickerCha
       try {
         const lagMin = lagWindow ? lagWindow[0] : -5;
         const lagMax = lagWindow ? lagWindow[1] : 5;
+        const baseUrl = getApiBaseUrl();
         const res = await fetch(
-          `http://127.0.0.1:8000/api/v1/correlation?ticker=${selectedSymbol}&lag_min=${lagMin}&lag_max=${lagMax}`
+          `${baseUrl}/api/v1/correlation?ticker=${selectedSymbol}&lag_min=${lagMin}&lag_max=${lagMax}`
         );
         if (res.ok) {
           const data = await res.json();
@@ -142,8 +144,9 @@ export function LeadLagCorrelationSection({ selectedTicker = "NVDA", onTickerCha
     setEvidenceSearch("");
     try {
       const today = new Date().toISOString().slice(0, 10);
+      const baseUrl = getApiBaseUrl();
       const res = await fetch(
-        `http://127.0.0.1:8000/api/v1/article-evidence?ticker=${selectedSymbol}&date=${today}`
+        `${baseUrl}/api/v1/article-evidence?ticker=${selectedSymbol}&date=${today}`
       );
       if (res.ok) {
         const data = await res.json();

@@ -257,10 +257,14 @@ cd web && npm run dev
 python run_platform.py --serve-api --serve-frontend
 ```
 
-### 4. Docker (Alternative)
+### 4. Docker Quick Start (Alternative)
 
 ```bash
-docker-compose up --build
+# One command to spin up the entire stack (API + Web + Qdrant)
+docker compose up --build
+
+# Include the Streamlit analytics companion too
+docker compose --profile full up --build
 ```
 
 ---
@@ -304,6 +308,162 @@ python -m pytest tests/ -v
 | `test_fastapi_endpoints` | Integration | All REST endpoints return correct status codes + schemas |
 | `test_high_accuracy_predictor_gating` | Integration | ML model confidence gating and prediction pipeline |
 | `test_extraction_pipeline` | Integration | Full 4-source extraction pipeline validation |
+
+---
+
+## 🚀 Production Deployment
+
+### Option A — Docker Compose (Recommended for Self-Hosting)
+
+The entire platform ships as a multi-container Docker Compose stack. One command launches everything.
+
+**Prerequisites:** [Docker Desktop](https://docs.docker.com/get-docker/) or Docker Engine + Compose plugin.
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/Har-dik25/Algorithmic-Market-Sentiment-News-Vector-Correlation-Platform.git
+cd Algorithmic-Market-Sentiment-News-Vector-Correlation-Platform
+
+# 2. Create your environment file
+cp .env.example .env        # edit API keys if needed
+
+# 3. Build & start the full stack
+docker compose up --build -d
+
+# 4. (Optional) Include Streamlit analytics companion
+docker compose --profile full up --build -d
+```
+
+| Service | URL | Container |
+|---------|-----|-----------|
+| **FastAPI Backend** | http://localhost:8000/docs | `market_sentiment_api` |
+| **Signal Desk (Next.js)** | http://localhost:3000 | `market_sentiment_web` |
+| **Qdrant Vector DB** | http://localhost:6333/dashboard | `market_sentiment_qdrant` |
+| **Streamlit Dashboard** | http://localhost:8501 *(profile: full)* | `market_sentiment_dashboard` |
+
+```bash
+# View logs
+docker compose logs -f api web
+
+# Stop everything
+docker compose down
+
+# Stop and remove volumes (full reset)
+docker compose down -v
+```
+
+---
+
+### Option B — Render (One-Click Cloud Deploy)
+
+The repo includes a [`render.yaml`](render.yaml) blueprint for zero-config deployment on [Render](https://render.com).
+
+**Steps:**
+
+1. Push your code to GitHub.
+2. Go to [Render Dashboard](https://dashboard.render.com/) → **New** → **Blueprint**.
+3. Connect your GitHub repo and select the branch (`main`).
+4. Render auto-detects `render.yaml` and provisions two services:
+   - `market-sentiment-api` — Python FastAPI backend (free tier).
+   - `market-sentiment-web` — Node.js Signal Desk frontend (free tier).
+5. The frontend's `NEXT_PUBLIC_API_URL` is auto-wired to the backend's URL.
+6. Click **Apply** — both services build and go live in ~5 minutes.
+
+> [!NOTE]
+> The free tier uses in-memory Qdrant (`QDRANT_MODE=memory`). Data resets on cold starts. Upgrade to a paid plan for persistent storage, or provision a Qdrant Cloud instance and set `QDRANT_HOST` / `QDRANT_PORT`.
+
+---
+
+### Option C — Vercel (Frontend) + Render (Backend)
+
+For maximum performance, deploy the frontend on [Vercel](https://vercel.com) and the backend on Render.
+
+**Backend (Render):**
+- Follow Option B above, but only deploy the `market-sentiment-api` service.
+- Note your backend URL (e.g., `https://market-sentiment-api.onrender.com`).
+
+**Frontend (Vercel):**
+
+1. Go to [vercel.com/new](https://vercel.com/new) → Import your GitHub repo.
+2. Set **Root Directory** to `web`.
+3. Add environment variable:
+   ```
+   NEXT_PUBLIC_API_URL = https://market-sentiment-api.onrender.com
+   ```
+4. Click **Deploy**. Vercel auto-detects Next.js and builds it.
+
+> [!TIP]
+> Update the `destination` in [`web/vercel.json`](web/vercel.json) to match your Render backend URL if you want server-side API proxying.
+
+---
+
+### Option D — Railway (Alternative PaaS)
+
+[Railway](https://railway.app) supports multi-service deploys from a single repo.
+
+1. Create a new project → **Deploy from GitHub Repo**.
+2. Add two services:
+   - **Backend:** Root `/`, start command `python run_platform.py --serve-api`.
+   - **Frontend:** Root `web/`, start command `npm run start`.
+3. Add a **Qdrant** plugin from Railway's marketplace.
+4. Set environment variables (`QDRANT_HOST`, `QDRANT_PORT`, `NEXT_PUBLIC_API_URL`).
+5. Deploy.
+
+---
+
+### Option E — Manual VPS / Cloud VM
+
+For full control on any Linux server (AWS EC2, GCP, DigitalOcean, etc.):
+
+```bash
+# 1. SSH into your server
+ssh user@your-server-ip
+
+# 2. Install Docker
+curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker $USER && newgrp docker
+
+# 3. Clone and deploy
+git clone https://github.com/Har-dik25/Algorithmic-Market-Sentiment-News-Vector-Correlation-Platform.git
+cd Algorithmic-Market-Sentiment-News-Vector-Correlation-Platform
+cp .env.example .env
+
+# 4. Launch (detached)
+docker compose up --build -d
+
+# 5. (Optional) Set up reverse proxy with Nginx + SSL
+sudo apt install -y nginx certbot python3-certbot-nginx
+# Configure nginx to proxy port 3000 (web) and 8000 (api)
+```
+
+---
+
+### Environment Variables Reference
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `API_PORT` | `8000` | FastAPI server port |
+| `DASHBOARD_PORT` | `8501` | Streamlit dashboard port |
+| `CORS_ORIGINS` | `*` | Allowed CORS origins (comma-separated) |
+| `QDRANT_HOST` | `localhost` | Qdrant server host (`qdrant` in Docker) |
+| `QDRANT_PORT` | `6333` | Qdrant gRPC port |
+| `QDRANT_MODE` | `memory` | `memory` for in-process, or `persistent` for external Qdrant |
+| `NEXT_PUBLIC_API_URL` | `http://localhost:8000` | Backend URL for the frontend |
+| `API_KEY` | *(empty)* | Admin key for `/recompute` endpoint |
+| `SEC_EDGAR_USER_AGENT` | *(example)* | Required for SEC EDGAR API |
+| `ALPHA_VANTAGE_API_KEY` | *(empty)* | Optional market data API key |
+
+---
+
+### ✅ Production Checklist
+
+- [ ] Set `CORS_ORIGINS` to your actual frontend domain(s) instead of `*`
+- [ ] Generate a strong `API_KEY` for the `/recompute` endpoint
+- [ ] Run `python run_platform.py --compute-only` once to populate data before first deploy
+- [ ] Verify `/health` endpoint returns healthy status for all subsystems
+- [ ] Set up a custom domain and TLS/SSL certificate (Render and Vercel handle this automatically)
+- [ ] Configure monitoring and alerts on the `/health` endpoint
+- [ ] Review and pin dependency versions in `requirements.txt` and `package.json`
 
 ---
 

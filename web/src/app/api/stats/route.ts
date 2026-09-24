@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { KPIS, MONTHLY_PERF, EQUITY_CURVE, SENTIMENT } from "@/lib/signal-data";
+import { getApiBaseUrl } from "@/lib/api-config";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const res = await fetch("http://127.0.0.1:8000/health", { cache: "no-store" });
+    const baseUrl = getApiBaseUrl();
+    const res = await fetch(`${baseUrl}/health`, { cache: "no-store" });
     if (res.ok) {
       const health = await res.json();
       const liveKpis = [...KPIS];
