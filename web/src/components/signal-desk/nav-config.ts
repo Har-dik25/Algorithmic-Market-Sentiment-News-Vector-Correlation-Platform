@@ -1,8 +1,10 @@
 import {
   LayoutDashboard,
+  GitCompareArrows,
+  Grid3X3,
+  Search,
   Radio,
   ListChecks,
-  BarChart3,
   LineChart,
   type LucideIcon,
 } from "lucide-react";
@@ -16,9 +18,10 @@ export interface NavItem {
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { id: "terminal", label: "Terminal", icon: LayoutDashboard, href: "#terminal" },
-  { id: "live-signals", label: "Live Signals", icon: Radio, href: "#live-signals", badge: "LIVE" },
+  { id: "terminal", label: "Single Ticker", icon: LayoutDashboard, href: "#terminal" },
+  { id: "comparison", label: "Comparison", icon: GitCompareArrows, href: "#comparison", badge: "FR-13" },
+  { id: "heatmap", label: "Heatmap Matrix", icon: Grid3X3, href: "#heatmap" },
+  { id: "vector-lab", label: "Vector Search", icon: Search, href: "#vector-lab" },
   { id: "watchlist", label: "Watchlist", icon: ListChecks, href: "#watchlist" },
-  { id: "signals", label: "Signals Log", icon: BarChart3, href: "#signals" },
   { id: "analytics", label: "Analytics", icon: LineChart, href: "#analytics" },
 ];

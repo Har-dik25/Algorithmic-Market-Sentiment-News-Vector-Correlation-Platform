@@ -8,6 +8,7 @@ export interface Asset {
   symbol: string;
   name: string;
   klass: AssetClass;
+  sector: string;
   price: number;
   change24h: number;
   volume24h: number;
@@ -39,7 +40,24 @@ export interface KpiStat {
   deltaLabel: string;
   spark: number[];
   tone: "positive" | "negative" | "neutral";
+  badge?: string;
 }
+
+// ---------- Sectors ----------
+export const SECTORS = [
+  "Semiconductors & AI",
+  "Software & Cloud",
+  "Consumer Electronics",
+  "Automotive / EV",
+  "Banking & Finance",
+  "IT Services",
+  "Energy & Telecom",
+  "Crypto",
+  "Commodities",
+  "Global Macro",
+] as const;
+
+export type Sector = (typeof SECTORS)[number];
 
 // ---------- Deterministic PRNG ----------
 function mulberry32(seed: number) {
@@ -72,22 +90,39 @@ function genSpark(base: number, points = 16, vol = 0.02): number[] {
   return out;
 }
 
-// ---------- Assets ----------
-const ASSET_DEFS: { symbol: string; name: string; klass: AssetClass; price: number }[] = [
-  { symbol: "NVDA", name: "NVIDIA Corporation", klass: "Stocks", price: 128.45 },
-  { symbol: "AAPL", name: "Apple Inc.", klass: "Stocks", price: 224.30 },
-  { symbol: "MSFT", name: "Microsoft Corporation", klass: "Stocks", price: 448.90 },
-  { symbol: "TSLA", name: "Tesla, Inc.", klass: "Stocks", price: 254.80 },
-  { symbol: "AMZN", name: "Amazon.com, Inc.", klass: "Stocks", price: 186.20 },
-  { symbol: "GOOGL", name: "Alphabet Inc.", klass: "Stocks", price: 179.50 },
-  { symbol: "META", name: "Meta Platforms Inc.", klass: "Stocks", price: 502.10 },
-  { symbol: "AMD", name: "Advanced Micro Devices", klass: "Stocks", price: 156.40 },
-  { symbol: "RELIANCE.NS", name: "Reliance Industries", klass: "Stocks", price: 2940.50 },
-  { symbol: "TCS.NS", name: "Tata Consultancy Services", klass: "Stocks", price: 3820.00 },
-  { symbol: "INFY.NS", name: "Infosys Limited", klass: "Stocks", price: 1540.25 },
-  { symbol: "BTC-USD", name: "Bitcoin USD", klass: "Crypto", price: 64820.00 },
-  { symbol: "GC=F", name: "Gold Futures", klass: "Commodities", price: 2368.50 },
-  { symbol: "^GSPC", name: "S&P 500 Index", klass: "Indices", price: 5460.20 },
+// ---------- Full 25+ Asset Universe ----------
+const ASSET_DEFS: { symbol: string; name: string; klass: AssetClass; sector: string; price: number }[] = [
+  // US Mega-Caps
+  { symbol: "NVDA", name: "NVIDIA Corporation", klass: "Stocks", sector: "Semiconductors & AI", price: 128.45 },
+  { symbol: "AAPL", name: "Apple Inc.", klass: "Stocks", sector: "Consumer Electronics", price: 224.30 },
+  { symbol: "MSFT", name: "Microsoft Corporation", klass: "Stocks", sector: "Software & Cloud", price: 448.90 },
+  { symbol: "TSLA", name: "Tesla, Inc.", klass: "Stocks", sector: "Automotive / EV", price: 254.80 },
+  { symbol: "AMZN", name: "Amazon.com, Inc.", klass: "Stocks", sector: "Software & Cloud", price: 186.20 },
+  { symbol: "GOOGL", name: "Alphabet Inc.", klass: "Stocks", sector: "Software & Cloud", price: 179.50 },
+  { symbol: "META", name: "Meta Platforms Inc.", klass: "Stocks", sector: "Software & Cloud", price: 502.10 },
+  { symbol: "AMD", name: "Advanced Micro Devices", klass: "Stocks", sector: "Semiconductors & AI", price: 156.40 },
+  { symbol: "INTC", name: "Intel Corporation", klass: "Stocks", sector: "Semiconductors & AI", price: 34.85 },
+  { symbol: "CRM", name: "Salesforce, Inc.", klass: "Stocks", sector: "Software & Cloud", price: 265.40 },
+  { symbol: "NFLX", name: "Netflix, Inc.", klass: "Stocks", sector: "Software & Cloud", price: 682.30 },
+  { symbol: "JPM", name: "JPMorgan Chase & Co.", klass: "Stocks", sector: "Banking & Finance", price: 198.70 },
+  { symbol: "V", name: "Visa Inc.", klass: "Stocks", sector: "Banking & Finance", price: 278.90 },
+  // Indian Large-Caps
+  { symbol: "RELIANCE.NS", name: "Reliance Industries", klass: "Stocks", sector: "Energy & Telecom", price: 2940.50 },
+  { symbol: "TCS.NS", name: "Tata Consultancy Services", klass: "Stocks", sector: "IT Services", price: 3820.00 },
+  { symbol: "INFY.NS", name: "Infosys Limited", klass: "Stocks", sector: "IT Services", price: 1540.25 },
+  { symbol: "HDFCBANK.NS", name: "HDFC Bank", klass: "Stocks", sector: "Banking & Finance", price: 1620.80 },
+  { symbol: "WIPRO.NS", name: "Wipro Limited", klass: "Stocks", sector: "IT Services", price: 485.60 },
+  { symbol: "ICICIBANK.NS", name: "ICICI Bank", klass: "Stocks", sector: "Banking & Finance", price: 1180.40 },
+  // Global Indices
+  { symbol: "^GSPC", name: "S&P 500 Index", klass: "Indices", sector: "Global Macro", price: 5460.20 },
+  { symbol: "^NDX", name: "NASDAQ-100 Index", klass: "Indices", sector: "Global Macro", price: 19240.80 },
+  { symbol: "^DJI", name: "Dow Jones Industrial", klass: "Indices", sector: "Global Macro", price: 41520.60 },
+  // Crypto
+  { symbol: "BTC-USD", name: "Bitcoin USD", klass: "Crypto", sector: "Crypto", price: 64820.00 },
+  { symbol: "ETH-USD", name: "Ethereum USD", klass: "Crypto", sector: "Crypto", price: 3420.50 },
+  // Commodities
+  { symbol: "GC=F", name: "Gold Futures", klass: "Commodities", sector: "Commodities", price: 2368.50 },
+  { symbol: "CL=F", name: "Crude Oil WTI Futures", klass: "Commodities", sector: "Commodities", price: 78.45 },
 ];
 
 export const ASSETS: Asset[] = ASSET_DEFS.map((a) => {
@@ -99,6 +134,15 @@ export const ASSETS: Asset[] = ASSET_DEFS.map((a) => {
     spark: genSpark(a.price, 20, Math.abs(change) / 100 + 0.008),
   };
 });
+
+// ---------- Sector lookup ----------
+export function getAssetsBySector(sector: string): Asset[] {
+  return ASSETS.filter((a) => a.sector === sector);
+}
+
+export function getUniqueSectors(): string[] {
+  return [...new Set(ASSETS.map((a) => a.sector))];
+}
 
 // ---------- Strategies ----------
 const STRATEGIES = [
@@ -131,8 +175,7 @@ function makeSignal(i: number): Signal {
   );
   const rr = round(reward / risk, 2);
   const status = i < 4 ? "ACTIVE" : i < 7 ? "PENDING" : pick(STATUSES);
-  // Deterministic age in minutes (no Date.now() — avoids SSR/client hydration mismatch)
-  const ageMinutes = 1 + Math.floor(rng() * 1560); // up to ~26h
+  const ageMinutes = 1 + Math.floor(rng() * 1560);
   const confidence = round(62 + rng() * 36, 0);
   const pnl =
     status === "TP_HIT"
@@ -165,41 +208,91 @@ export const SIGNALS: Signal[] = Array.from({ length: 48 }, (_, i) => makeSignal
   (a, b) => a.ageMinutes - b.ageMinutes
 );
 
-// ---------- KPIs ----------
+// ---------- PRD-Aligned KPIs ----------
 export const KPIS: KpiStat[] = [
   {
-    label: "Active Signals",
-    value: SIGNALS.filter((s) => s.status === "ACTIVE").length.toString(),
-    delta: 12.5,
-    deltaLabel: "vs last week",
-    spark: genSpark(12, 16, 0.08),
+    label: "Optimal Lead-Lag",
+    value: "+3 Days",
+    delta: 0,
+    deltaLabel: "predictive lead",
+    spark: [0.08, 0.11, 0.15, 0.22, 0.31, 0.38, 0.44, 0.49, 0.52, 0.35, 0.19],
+    tone: "positive",
+    badge: "🟢 PREDICTIVE LEAD",
+  },
+  {
+    label: "Peak Correlation (r)",
+    value: "0.5200",
+    delta: 8.3,
+    deltaLabel: "p < 0.001",
+    spark: [0.32, 0.38, 0.41, 0.44, 0.42, 0.47, 0.49, 0.51, 0.52],
     tone: "positive",
   },
   {
-    label: "Win Rate (30d)",
-    value: "68.4%",
-    delta: 4.2,
-    deltaLabel: "vs prev 30d",
-    spark: [58, 61, 60, 63, 62, 65, 64, 66, 67, 66, 68, 68.4],
+    label: "Lead-Lag Classification",
+    value: "PREDICTIVE",
+    delta: 0,
+    deltaLabel: "LEADING_SIGNAL regime",
+    spark: genSpark(0.5, 12, 0.04),
     tone: "positive",
+    badge: "PREDICTIVE_LEAD",
   },
   {
-    label: "Realized P&L",
-    value: "+$24,832",
-    delta: 18.9,
-    deltaLabel: "this month",
-    spark: genSpark(8000, 16, 0.05).map((n) => n + 4000),
+    label: "Backtest Accuracy",
+    value: "91.2%",
+    delta: 4.8,
+    deltaLabel: "N = 68 high-conf samples",
+    spark: [82, 85, 84, 87, 89, 88, 90, 91, 91.2],
     tone: "positive",
-  },
-  {
-    label: "Avg R:R",
-    value: "2.34",
-    delta: -3.1,
-    deltaLabel: "vs last week",
-    spark: [2.8, 2.6, 2.7, 2.5, 2.4, 2.6, 2.5, 2.4, 2.3, 2.34],
-    tone: "negative",
   },
 ];
+
+export function getKpisForTicker(symbol: string): KpiStat[] {
+  let seed = 0;
+  for (let i = 0; i < symbol.length; i++) seed = (seed * 31 + symbol.charCodeAt(i)) >>> 0;
+  const optLag = [-2, -1, 1, 2, 3][seed % 5];
+  const peakR = Number((0.36 + ((seed % 100) / 100) * 0.32).toFixed(4));
+  const acc = Number((84 + ((seed % 80) / 80) * 9.8).toFixed(1));
+  const classification = optLag > 0 ? "PREDICTIVE" : optLag < 0 ? "REACTIVE" : "COINCIDENT";
+  const regimeDesc = optLag > 0 ? "LEADING_SIGNAL regime" : optLag < 0 ? "LAGGING_PRICE regime" : "COINCIDENT regime";
+
+  return [
+    {
+      label: "Optimal Lead-Lag",
+      value: optLag > 0 ? `+${optLag} Days` : optLag < 0 ? `${optLag} Days` : "0 Days",
+      delta: 0,
+      deltaLabel: optLag > 0 ? "predictive lead" : optLag < 0 ? "reactive lag" : "coincident",
+      spark: [0.08, 0.15, 0.22, 0.35, 0.45, peakR, 0.38, 0.21],
+      tone: optLag > 0 ? "positive" : optLag < 0 ? "negative" : "neutral",
+      badge: optLag > 0 ? "🟢 PREDICTIVE LEAD" : optLag < 0 ? "🟠 REACTIVE LAG" : "🟣 COINCIDENT",
+    },
+    {
+      label: "Peak Correlation (r)",
+      value: `+${peakR}`,
+      delta: Number(((peakR - 0.4) * 20).toFixed(1)),
+      deltaLabel: "p < 0.001",
+      spark: [0.32, 0.38, 0.41, 0.45, peakR - 0.04, peakR],
+      tone: peakR > 0.4 ? "positive" : "neutral",
+    },
+    {
+      label: "Lead-Lag Classification",
+      value: classification,
+      delta: 0,
+      deltaLabel: regimeDesc,
+      spark: [0.4, 0.42, 0.46, 0.5, 0.52, 0.54],
+      tone: optLag > 0 ? "positive" : "neutral",
+      badge: `${classification}_SIGNAL`,
+    },
+    {
+      label: "Backtest Accuracy",
+      value: `${acc}%`,
+      delta: Number((acc - 85).toFixed(1)),
+      deltaLabel: "Directional win rate",
+      spark: [82, 84, 85, 87, acc - 2, acc],
+      tone: acc > 88 ? "positive" : "neutral",
+    },
+  ];
+}
+
 
 // ---------- Performance (monthly) ----------
 export const MONTHLY_PERF = [
@@ -235,7 +328,6 @@ export function genPriceSeries(points = 90): { t: number; price: number }[] {
     p = p * (1 + (rng() - 0.48) * 0.015);
     out.push({ t: i, price: round(p, 2) });
   }
-  // anchor end near current BTC price
   return out;
 }
 
@@ -260,6 +352,10 @@ export const TICKER = ASSETS.map((a) => ({
   change: a.change24h,
 }));
 
+// ---------- Date range presets ----------
+export const DATE_RANGES = ["6M", "1Y", "2Y", "All"] as const;
+export type DateRange = (typeof DATE_RANGES)[number];
+
 // ---------- Helpers ----------
 export function fmtPrice(n: number) {
   if (n >= 1000) return n.toLocaleString("en-US", { maximumFractionDigits: 2 });
@@ -272,8 +368,6 @@ export function fmtCompact(n: number) {
 }
 
 // Deterministic, locale-free relative time formatter (SSR-safe).
-// `ageMinutes` is a plain number stored on the signal, NOT derived from Date.now(),
-// so server and client render identical strings.
 export function fmtAgo(ageMinutes: number): string {
   if (ageMinutes < 1) return "just now";
   if (ageMinutes < 60) return `${ageMinutes}m ago`;

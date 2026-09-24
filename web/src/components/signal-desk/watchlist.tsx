@@ -17,7 +17,17 @@ const CLASS_COLORS: Record<string, string> = {
   Indices: "bg-primary/15 text-primary",
 };
 
-function WatchRow({ asset, index }: { asset: Asset; index: number }) {
+function WatchRow({
+  asset,
+  index,
+  isSelected,
+  onSelect,
+}: {
+  asset: Asset;
+  index: number;
+  isSelected?: boolean;
+  onSelect?: () => void;
+}) {
   const [price, setPrice] = React.useState(asset.price);
   const [flash, setFlash] = React.useState<"up" | "down" | null>(null);
 
@@ -37,7 +47,13 @@ function WatchRow({ asset, index }: { asset: Asset; index: number }) {
   const changePct = Math.abs(asset.change24h).toFixed(2);
 
   return (
-    <tr className="group border-b border-border/50 last:border-0 transition-colors hover:bg-accent/30">
+    <tr
+      onClick={onSelect}
+      className={cn(
+        "group border-b border-border/50 last:border-0 transition-colors cursor-pointer hover:bg-accent/40",
+        isSelected && "bg-primary/15 border-l-2 border-primary"
+      )}
+    >
       <td className="py-2.5 pl-3 pr-2">
         <div className="flex items-center gap-2.5">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-bold uppercase">
@@ -45,7 +61,9 @@ function WatchRow({ asset, index }: { asset: Asset; index: number }) {
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
-              <span className="text-sm font-semibold">{asset.symbol}</span>
+              <span className={cn("text-sm font-semibold", isSelected && "text-primary font-bold")}>
+                {asset.symbol}
+              </span>
               <span
                 className={cn(
                   "rounded px-1 py-px text-[8px] font-semibold uppercase tracking-wide",
@@ -73,7 +91,7 @@ function WatchRow({ asset, index }: { asset: Asset; index: number }) {
       <td className="py-2.5 px-2 text-right hidden sm:table-cell">
         <span
           className={cn(
-            "tnum inline-flex items-center gap-0.5 text-xs font-medium",
+            "inline-flex items-center gap-0.5 text-xs font-semibold",
             up ? "text-success" : "text-danger"
           )}
         >
@@ -86,7 +104,10 @@ function WatchRow({ asset, index }: { asset: Asset; index: number }) {
       </td>
       <td className="py-2.5 pl-2 pr-3 text-right">
         <div
-          className={cn("ml-auto inline-block", up ? "text-success" : "text-danger")}
+          className={cn(
+            "inline-block",
+            up ? "text-success [&_path]:stroke-success" : "text-danger [&_path]:stroke-danger"
+          )}
         >
           <Sparkline data={asset.spark} width={80} height={28} />
         </div>
@@ -95,13 +116,21 @@ function WatchRow({ asset, index }: { asset: Asset; index: number }) {
   );
 }
 
-export function Watchlist() {
+export function Watchlist({
+  selectedTicker,
+  onSelectTicker,
+}: {
+  selectedTicker?: string;
+  onSelectTicker?: (ticker: string) => void;
+}) {
   return (
     <Card className="overflow-hidden p-0">
       <div className="flex items-center justify-between border-b border-border p-4">
         <div>
-          <h3 className="text-sm font-semibold">Watchlist</h3>
-          <p className="text-[11px] text-muted-foreground">{ASSETS.length} instruments tracked</p>
+          <h3 className="text-sm font-semibold">Asset Universe Watchlist</h3>
+          <p className="text-[11px] text-muted-foreground">
+            {ASSETS.length} instruments tracked · Click any row to load into Terminal
+          </p>
         </div>
         <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
           <Plus className="h-3.5 w-3.5" />
@@ -125,7 +154,13 @@ export function Watchlist() {
           </thead>
           <tbody>
             {ASSETS.map((a, i) => (
-              <WatchRow key={a.symbol} asset={a} index={i} />
+              <WatchRow
+                key={a.symbol}
+                asset={a}
+                index={i}
+                isSelected={a.symbol === selectedTicker}
+                onSelect={() => onSelectTicker?.(a.symbol)}
+              />
             ))}
           </tbody>
         </table>
